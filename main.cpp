@@ -3,8 +3,8 @@
 
 using namespace std;
 
-const int assets=4;
-const int points=1000;
+const int assets=15;
+const int points=250;
 double U[points][assets];
 double eps=0.00001;
 const int integPoints=17; // Gauss Legendre points
@@ -12,7 +12,7 @@ double gaussLegendPoints[integPoints];
 double gaussLegendWeights[integPoints];
 
 void read_data(){
-	ifstream ifs("data_c.csv");
+	ifstream ifs("snp500.csv");
 	string st;
 	for(int i=0;i<points;i++){
 		getline(ifs,st);
@@ -88,6 +88,9 @@ double gumbelPdf(double u, double v, double theta){
 		vmax=1.0;
 	}
 	double num=gumbel(umax,vmax,theta)-gumbel(umax,vmin,theta)-gumbel(umin,vmax,theta)+gumbel(umin,vmin,theta);
+	if(num<=0){
+		return 1e-7;
+	}
 	return (num/(4*eps*eps));
 }
 
@@ -131,7 +134,7 @@ double logLikelihood(double data[points][assets], double theta[assets], char fam
 
 
 int iterations=300;
-double alpha=0.001; //Learning Rate
+double alpha=0.0001; //Learning Rate
 
 void find_optimal_parameters(double[points][assets],double theta[assets]){
 	
@@ -151,9 +154,16 @@ void find_optimal_parameters(double[points][assets],double theta[assets]){
 			thetaUpd[j]+=eps;
 			double derivative=(logLikelihood(U,thetaUpd)-l)/eps;
 			thetaUpd[j]-=eps;
-			thetaFinal[j]=theta[j]+alpha*derivative;
-			if(thetaFinal[j]<1.0){
-				thetaFinal[j]=1.0;
+			double change=alpha*derivative;
+			if(change<-1.0){
+				change=-1.0;
+			}
+			else if(change>1.0){
+				change=1.0;
+			}
+			thetaFinal[j]=theta[j]+change;
+			if(thetaFinal[j]<=1.0){
+				thetaFinal[j]=1.0001;
 			}
 		}
 		theta=thetaFinal;
@@ -163,7 +173,10 @@ void find_optimal_parameters(double[points][assets],double theta[assets]){
 int main(){
 	read_data();
 	read_GLData();
-	double theta[assets]={1.5,2.0,2.5,3.0};
+	double theta[assets];
+	for(int i=0;i<assets;i++){
+		theta[i]=3;
+	}
 	find_optimal_parameters(U,theta);
 	
 //	for(int i=0;i<integPoints;i++){

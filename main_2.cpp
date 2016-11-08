@@ -3,8 +3,8 @@
 
 using namespace std;
 
-const int assets=4;
-const int points=500;
+const int assets=15;
+const int points=250;
 double U[points][assets];
 double eps=0.00001;
 const int integPoints=17; // Gauss Legendre points
@@ -12,7 +12,7 @@ double gaussLegendPoints[integPoints];
 double gaussLegendWeights[integPoints];
 
 void read_data(){
-	ifstream ifs("data_c.csv");
+	ifstream ifs("snp500.csv");
 	string st;
 	for(int i=0;i<points;i++){
 		getline(ifs,st);
@@ -222,7 +222,10 @@ int main(){
 	read_data();
 	read_GLData();
 	//cout<<U[0][0]<<endl;
-	double theta[assets]={1.5,2.0,2.5,3.0};
+	double theta[assets];
+	for(int i=0;i<assets;i++){
+		theta[i]=3;
+	}
 	find_optimal_parameters(U,theta,theta);
 	
 	
